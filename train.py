@@ -15,7 +15,7 @@ NUM_CATEGORIES = len(CATEGORIES)
 
 def load_and_preprocess_image(path):
     img = tf.io.read_file(path)
-    img = tf.io.decode_png(img, channels=3)  # Changed from decode_jpeg to decode_png
+    img = tf.io.decode_png(img, channels=3)
     img = tf.image.resize(img, [IMG_SIZE, IMG_SIZE])
     img = tf.cast(img, tf.float32) / 255.0
     return img
@@ -78,7 +78,10 @@ base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 2
 
 # Fine tuning of the model
 base_model.trainable = True
-fine_tune_at = 143
+fine_tune_at = 143 #  the beginning of the conv5 stage
+# Freeze all the layers before the `fine_tune_at` layer
+for layer in base_model.layers[:fine_tune_at]:
+  layer.trainable = False
 
 # Create Sequential Model
 model = models.Sequential()
