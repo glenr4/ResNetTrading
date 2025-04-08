@@ -105,40 +105,57 @@ def process_path(file_path):
 
 def get_datasets(data_dir, validation_split=0.2):
     data_dir = pathlib.Path(data_dir)
-    
+
     # Validate categories
     found_categories = [item.name for item in data_dir.glob('*') if item.is_dir()]
     if not all(cat in found_categories for cat in CATEGORIES):
         raise ValueError(f"Missing categories. Expected {CATEGORIES}, found {found_categories}")
-    
+
     # Get all file paths and convert to strings
     all_files = [str(f) for f in data_dir.glob('*/*.png')]
     print(f"Found {len(all_files)} PNG files")
     print(f"Categories found: {found_categories}")
-    
+
     # Shuffle all files
     all_files = tf.random.shuffle(all_files)
-    
+
     # Calculate split
     val_size = int(len(all_files) * validation_split)
     train_files = all_files[val_size:]
     val_files = all_files[:val_size]
-    
+
     print(f"Training images: {len(train_files)}")
     print(f"Validation images: {len(val_files)}")
-    
+
+    # --- Data Augmentation Layers ---
+    data_augmentation = keras.Sequential(
+        [
+            layers.RandomFlip("horizontal"),
+            layers.RandomRotation(0.1),
+            layers.RandomZoom(0.1),
+            # Add more augmentation layers as needed (e.g., RandomContrast, RandomBrightness)
+        ]
+    )
+
+    def augment(image, label):
+        # Apply augmentation only during training
+        image = data_augmentation(image)
+        return image, label
+
     # Create datasets
     train_ds = tf.data.Dataset.from_tensor_slices(train_files)
     val_ds = tf.data.Dataset.from_tensor_slices(val_files)
-    
-    # Process both datasets
-    train_ds = train_ds.shuffle(1000)
+
+    # Process and augment the training dataset
+    train_ds = train_ds.shuffle(len(train_files)) # Shuffle before mapping
     train_ds = train_ds.map(process_path, num_parallel_calls=AUTOTUNE)
+    train_ds = train_ds.map(augment, num_parallel_calls=AUTOTUNE) # Apply augmentation
     train_ds = train_ds.cache().batch(BATCH_SIZE).prefetch(AUTOTUNE)
-    
+
+    # Process the validation dataset (no augmentation)
     val_ds = val_ds.map(process_path, num_parallel_calls=AUTOTUNE)
     val_ds = val_ds.cache().batch(BATCH_SIZE).prefetch(AUTOTUNE)
-    
+
     return train_ds, val_ds
 
 # Create datasets
@@ -174,9 +191,9 @@ model.compile(optimizer=keras.optimizers.Adam(learning_rate=FINE_TUNE_LR), # Muc
 # Continue training
 with tf.device('/device:GPU:0'):
     history_fine = model.fit(train_dataset,
-                            epochs=EPOCHS_HEAD + EPOCHS_FINE_TUNE, # Total epochs
-                            initial_epoch=history.epoch[-1] + 1, # Start from where the head training left off
-                            validation_data=validation_dataset)
+                                epochs=EPOCHS_HEAD + EPOCHS_FINE_TUNE, # Total epochs
+                                initial_epoch=history.epoch[-1] + 1, # Start from where the head training left off
+                                validation_data=validation_dataset)
 
 # --- 9. Evaluate ---
 loss, accuracy = model.evaluate(validation_dataset)
@@ -221,4 +238,3 @@ plt.xlabel('Epoch')
 plt.legend(loc='upper left')
 
 plt.show()
-
