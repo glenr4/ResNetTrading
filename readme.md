@@ -1,19 +1,16 @@
-# ResNetTransfer
+# ResNetTrading
 
-From following the tutorial at: https://medium.com/@paravisionlab/supercharge-your-ai-resnet50-transfer-learning-unleashed-b7c0e40976c4
+Transfer learning project using ResNet50 model and retrained on candlestick charts showing either up, down or sideways price action. The aim is to be able to predict direction given an unseen chart.
 
-The tutorial shows how to retrain the top layers of the ResNet50 model (transfer learning). The original model is trained on the ImageNet dataset that has 1000 output classes but the retraining allows it to predict the 10 output classes of the CIFAR-10 dataset. 
-
-## Results
-The result are pretty good with an average precision of 93% and the Confusion Matrix has relatively high values on the diagonal.
-
-<img src="image.png" width="400">
 
 ## Restore
 1. Make sure you have Miniconda installed: https://www.anaconda.com/docs/getting-started/miniconda/install
 1. Setup the environment: `conda env create -f environment.yml`
 1. Activate the environment: `conda activate ResNetTransfer`
 
+
+
+# TODO: update items below
 ## Run
 ### Train
 * Run: `python main.py`

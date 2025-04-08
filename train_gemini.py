@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, RandomFlip, RandomRotation, RandomZoom
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
@@ -16,7 +16,7 @@ img_width, img_height = 224, 224  # ResNet50 input size
 batch_size = 32
 num_classes = 3
 
-epochs = 10  # Adjust as needed
+epochs = 20  # Adjust as needed
 
 # Data Preprocessing with channel conversion
 def rgba_to_rgb(image):
@@ -29,7 +29,14 @@ def rgba_to_rgb(image):
 train_datagen = ImageDataGenerator(
     rescale=1./255,  # Normalize pixel values
     validation_split=0.2, # create validation split.
-    preprocessing_function=rgba_to_rgb # Add preprocessing function
+    preprocessing_function=rgba_to_rgb, # Add preprocessing function
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    # horizontal_flip=True,
+    fill_mode='nearest'
 )
 
 train_generator = train_datagen.flow_from_directory(
@@ -53,17 +60,17 @@ validation_generator = train_datagen.flow_from_directory(
 # Load ResNet50 (without top layers)
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(img_width, img_height, 3))
 
-# Fine tuning of the model
-base_model.trainable = True
-fine_tune_at = 143 #  the beginning of the conv5 stage
-# Freeze all the layers before the `fine_tune_at` layer
-for layer in base_model.layers[:fine_tune_at]:
-  layer.trainable = False
+# # Fine tuning of the model
+# base_model.trainable = True
+# fine_tune_at = 143 #  the beginning of the conv5 stage
+# # Freeze all the layers before the `fine_tune_at` layer
+# for layer in base_model.layers[:fine_tune_at]:
+#   layer.trainable = False
 
 # Add custom classification layers
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
-x = Dense(1024, activation='relu')(x)
+# x = Dense(1024, activation='relu')(x)
 predictions = Dense(num_classes, activation='softmax')(x)
 
 # Create the final model
