@@ -8,7 +8,7 @@ import os
 import pathlib
 
 AUTOTUNE = tf.data.AUTOTUNE
-BATCH_SIZE = 15
+BATCH_SIZE = 17
 IMG_SIZE = 224
 EPOCHS = 20
 
