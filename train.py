@@ -8,13 +8,13 @@ import os
 import pathlib
 
 AUTOTUNE = tf.data.AUTOTUNE
-BATCH_SIZE = 20
+BATCH_SIZE = 10
 IMG_SIZE = 224
-EPOCHS = 15
+EPOCHS = 20
 
 CATEGORIES = ['down', 'neutral', 'up']  # Define fixed order of categories
 NUM_CATEGORIES = len(CATEGORIES)
-fine_tune_start_layer_name = 'conv5_block1_1_conv' 
+fine_tune_start_layer_name = 'conv4_block1_1_conv' 
 
 def load_and_preprocess_image(path):
     img = tf.io.read_file(path)
