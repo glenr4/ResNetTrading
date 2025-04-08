@@ -8,7 +8,7 @@ import os
 import pathlib
 
 AUTOTUNE = tf.data.AUTOTUNE
-BATCH_SIZE = 17
+BATCH_SIZE = 20
 IMG_SIZE = 224
 EPOCHS = 20
 
@@ -116,9 +116,16 @@ model.add(layers.Dense(NUM_CATEGORIES, activation='softmax'))
                                 #  ,kernel_regularizer=tf.keras.regularizers.l2(0.001))) # L2 regularization
 
 # Train the model
-model.compile(optimizer=optimizers.Adam(learning_rate=1e-5), 
-             loss='categorical_crossentropy', 
-             metrics=['acc'])
+lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+initial_learning_rate=1e-5,
+decay_steps=1000,
+decay_rate=0.9)
+optimizer = optimizers.Adam(learning_rate=lr_schedule)
+
+model.compile(optimizer=optimizer,
+loss='categorical_crossentropy',
+metrics=['acc'])
+
 
 early_stopping = EarlyStopping(monitor='val_acc', patience=5, restore_best_weights=True)
 with tf.device('/device:GPU:0'):
