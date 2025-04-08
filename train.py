@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
 from keras import models, layers, optimizers
 from tensorflow import keras
+from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 import os
 import pathlib
@@ -110,20 +111,22 @@ for layer in base_model.layers:
 model = models.Sequential()
 model.add(base_model)
 model.add(layers.GlobalAveragePooling2D())
-model.add(layers.Dropout(0.5))
-model.add(layers.Dense(NUM_CATEGORIES, activation='softmax',
-                       kernel_regularizer=tf.keras.regularizers.l2(0.001))) # L2 regularization
+# model.add(layers.Dropout(0.5))    # Disabled regularization
+model.add(layers.Dense(NUM_CATEGORIES, activation='softmax'))
+                                #  ,kernel_regularizer=tf.keras.regularizers.l2(0.001))) # L2 regularization
 
 # Train the model
 model.compile(optimizer=optimizers.Adam(learning_rate=1e-5), 
              loss='categorical_crossentropy', 
              metrics=['acc'])
 
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 with tf.device('/device:GPU:0'):
     history = model.fit(
         train_ds,
         epochs=EPOCHS,
-        validation_data=val_ds
+        validation_data=val_ds,
+        callbacks=[early_stopping]
     )
 
 model.save('./model')
