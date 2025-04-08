@@ -88,7 +88,8 @@ def load_and_preprocess_image(path):
     img = tf.io.read_file(path)
     img = tf.io.decode_png(img, channels=3)
     img = tf.image.resize(img, IMG_SIZE)
-    img = tf.cast(img, tf.float32) / 255.0
+    img = tf.cast(img, tf.float32)
+    img = tf.keras.applications.mobilenet_v2.preprocess_input(img)
     return img
 
 def process_path(file_path):
@@ -177,6 +178,10 @@ with tf.device('/device:GPU:0'):
                             initial_epoch=history.epoch[-1] + 1, # Start from where the head training left off
                             validation_data=validation_dataset)
 
+# --- 9. Evaluate ---
+loss, accuracy = model.evaluate(validation_dataset)
+print(f"Final Validation Accuracy: {accuracy * 100:.2f}%")
+
 ## Head model accuracy and loss plots
 # Plot training & validation accuracy values
 plt.figure(figsize=(12, 4))
@@ -217,6 +222,3 @@ plt.legend(loc='upper left')
 
 plt.show()
 
-# --- 9. Evaluate ---
-loss, accuracy = model.evaluate(validation_dataset)
-print(f"Final Validation Accuracy: {accuracy * 100:.2f}%")
