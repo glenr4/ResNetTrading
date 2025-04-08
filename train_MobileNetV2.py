@@ -130,9 +130,8 @@ def get_datasets(data_dir, validation_split=0.2):
     # --- Data Augmentation Layers ---
     data_augmentation = keras.Sequential(
         [
-            layers.RandomFlip("horizontal"),
-            layers.RandomRotation(0.1),
-            layers.RandomZoom(0.1),
+            layers.RandomRotation(0.1, fill_mode='nearest'),
+            layers.RandomZoom(0.1, fill_mode='nearest'),
             # Add more augmentation layers as needed (e.g., RandomContrast, RandomBrightness)
         ]
     )
