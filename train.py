@@ -120,7 +120,7 @@ model.compile(optimizer=optimizers.Adam(learning_rate=1e-5),
              loss='categorical_crossentropy', 
              metrics=['acc'])
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_acc', patience=5, restore_best_weights=True)
 with tf.device('/device:GPU:0'):
     history = model.fit(
         train_ds,
