@@ -77,7 +77,7 @@ def get_datasets(data_dir, validation_split=0.2):
     # Process both datasets
     train_ds = train_ds.shuffle(1000)
     train_ds = train_ds.map(process_path, num_parallel_calls=AUTOTUNE)
-    train_ds = train_ds.map(augment, num_parallel_calls=AUTOTUNE)
+    # train_ds = train_ds.map(augment, num_parallel_calls=AUTOTUNE) # disable augmentation
     train_ds = train_ds.cache().batch(BATCH_SIZE).prefetch(AUTOTUNE)
     
     val_ds = val_ds.map(process_path, num_parallel_calls=AUTOTUNE)
@@ -110,7 +110,9 @@ for layer in base_model.layers:
 model = models.Sequential()
 model.add(base_model)
 model.add(layers.GlobalAveragePooling2D())
-model.add(layers.Dense(NUM_CATEGORIES, activation='softmax'))
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(NUM_CATEGORIES, activation='softmax',
+                       kernel_regularizer=tf.keras.regularizers.l2(0.001))) # L2 regularization
 
 # Train the model
 model.compile(optimizer=optimizers.Adam(learning_rate=1e-5), 
