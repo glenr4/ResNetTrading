@@ -116,13 +116,13 @@ model.add(layers.Dense(NUM_CATEGORIES, activation='softmax'))
                                 #  ,kernel_regularizer=tf.keras.regularizers.l2(0.001))) # L2 regularization
 
 # Train the model
-lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-initial_learning_rate=1e-5,
-decay_steps=1000,
-decay_rate=0.9)
-optimizer = optimizers.Adam(learning_rate=lr_schedule)
-
-model.compile(optimizer=optimizer,
+# lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+# initial_learning_rate=1e-5,
+# decay_steps=1000,
+# decay_rate=0.9)
+# optimizer = optimizers.Adam(learning_rate=lr_schedule)
+optimizer=optimizers.Adam(learning_rate=1e-5)
+model.compile(optimizer=optimizer, 
 loss='categorical_crossentropy',
 metrics=['acc'])
 
