@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
 from keras import models, layers, optimizers
+from tensorflow import keras
 import matplotlib.pyplot as plt
 import os
 import pathlib
@@ -31,6 +32,19 @@ def process_path(file_path):
     img = load_and_preprocess_image(file_path)
     print(label_onehot)
     return img, label_onehot
+
+def augment(image, label):
+    data_augmentation = keras.Sequential(
+        [
+            layers.RandomRotation(0.1, fill_mode='nearest'),
+            layers.RandomZoom(0.1, fill_mode='nearest'),
+            layers.RandomBrightness(0.1),
+            layers.RandomContrast(0.1),
+        ]
+    )
+
+    image = data_augmentation(image)
+    return image, label
 
 def get_datasets(data_dir, validation_split=0.2):
     data_dir = pathlib.Path(data_dir)
@@ -63,6 +77,7 @@ def get_datasets(data_dir, validation_split=0.2):
     # Process both datasets
     train_ds = train_ds.shuffle(1000)
     train_ds = train_ds.map(process_path, num_parallel_calls=AUTOTUNE)
+    train_ds = train_ds.map(augment, num_parallel_calls=AUTOTUNE)
     train_ds = train_ds.cache().batch(BATCH_SIZE).prefetch(AUTOTUNE)
     
     val_ds = val_ds.map(process_path, num_parallel_calls=AUTOTUNE)
