@@ -98,7 +98,7 @@ model.add(layers.GlobalAveragePooling2D())
 model.add(layers.Dense(NUM_CATEGORIES, activation='softmax'))
 
 # Train the model
-model.compile(optimizer=optimizers.RMSprop(learning_rate=1e-5), 
+model.compile(optimizer=optimizers.Adam(learning_rate=1e-5), 
              loss='categorical_crossentropy', 
              metrics=['acc'])
 
