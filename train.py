@@ -95,17 +95,17 @@ base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 2
 # base_model.summary()
 
 # Freeze all layers before the fine-tune start layer
-# base_model.trainable = True
-# freeze_layer_found = False
+base_model.trainable = True
+freeze_layer_found = False
 
-# for layer in base_model.layers:
-#     if layer.name == fine_tune_start_layer_name:
-#         freeze_layer_found = True
+for layer in base_model.layers:
+    if layer.name == fine_tune_start_layer_name:
+        freeze_layer_found = True
 
-#     if freeze_layer_found:
-#         layer.trainable = True
-#     else:
-#         layer.trainable = False
+    if freeze_layer_found:
+        layer.trainable = True
+    else:
+        layer.trainable = False
 
 # Create Sequential Model
 model = models.Sequential()
