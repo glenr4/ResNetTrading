@@ -12,6 +12,7 @@ EPOCHS = 15
 
 CATEGORIES = ['down', 'neutral', 'up']  # Define fixed order of categories
 NUM_CATEGORIES = len(CATEGORIES)
+fine_tune_start_layer_name = 'conv3_block1_1_conv' 
 
 def load_and_preprocess_image(path):
     img = tf.io.read_file(path)
@@ -75,13 +76,20 @@ train_ds, val_ds = get_datasets('images')
 
 # Load the model
 base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+# base_model.summary()
 
-# Fine tuning of the model
+# Freeze all layers before the fine-tune start layer
 base_model.trainable = True
-fine_tune_at = 143 #  the beginning of the conv5 stage
-# Freeze all the layers before the `fine_tune_at` layer
-for layer in base_model.layers[:fine_tune_at]:
-  layer.trainable = False
+freeze_layer_found = False
+
+for layer in base_model.layers:
+    if layer.name == fine_tune_start_layer_name:
+        freeze_layer_found = True
+
+    if freeze_layer_found:
+        layer.trainable = True
+    else:
+        layer.trainable = False
 
 # Create Sequential Model
 model = models.Sequential()
@@ -90,7 +98,7 @@ model.add(layers.GlobalAveragePooling2D())
 model.add(layers.Dense(NUM_CATEGORIES, activation='softmax'))
 
 # Train the model
-model.compile(optimizer=optimizers.RMSprop(learning_rate=1e-4), 
+model.compile(optimizer=optimizers.RMSprop(learning_rate=1e-5), 
              loss='categorical_crossentropy', 
              metrics=['acc'])
 
